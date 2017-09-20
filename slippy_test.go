@@ -81,7 +81,7 @@ func TestCounterIdle(t *testing.T) {
 	})
 }
 
-func TestCounterAddition(t *testing.T) {
+func TestCounterAdditionSlipping(t *testing.T) {
 
 	sc := NewSlippyCounter(2 * time.Second)
 	defer sc.Close()
@@ -118,6 +118,30 @@ func TestCounterAddition(t *testing.T) {
 				So(sc.Count(), ShouldEqual, 0)
 			})
 
+		})
+	})
+}
+
+func TestCounterAddition30k(t *testing.T) {
+
+	sc := NewSlippyCounter(0)
+	defer sc.Close()
+	sd := 5 * time.Millisecond
+
+	Convey("Given new Slippy Counter", t, func() {
+
+		Convey("The Value should be zero", func() {
+			So(sc.Count(), ShouldEqual, 0)
+		})
+
+		Convey("When Add(1) 30k times", func() {
+			for c := 0; c < 30000; c++ {
+				sc.Add(1)
+			}
+			Convey("The Value should be 30k", func() {
+				time.Sleep(sd)
+				So(sc.Count(), ShouldEqual, 30000)
+			})
 		})
 	})
 }
@@ -264,4 +288,70 @@ func TestCounterBurn(t *testing.T) {
 
 		})
 	})
+}
+
+func BenchmarkAdd1(b *testing.B) {
+	sc := NewSlippyCounter(0)
+	defer sc.Close()
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		sc.Add(1)
+	}
+}
+
+func BenchmarkSlipZero(b *testing.B) {
+	sc := NewSlippyCounter(0)
+	defer sc.Close()
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		sc.slip(0)
+	}
+}
+
+func BenchmarkSlip1k(b *testing.B) {
+	sc := NewSlippyCounter(0)
+	defer sc.Close()
+
+	for c := 0; c < 1000; c++ {
+		sc.Add(1)
+	}
+
+	// cache these
+	scl := sc.log
+	scc := sc.count
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		// replace key parts
+		sc.log = scl
+		sc.count = scc
+
+		// Slip it all
+		sc.slip(0)
+	}
+}
+
+func BenchmarkSlip10k(b *testing.B) {
+	sc := NewSlippyCounter(0)
+	defer sc.Close()
+
+	for c := 0; c < 10000; c++ {
+		sc.Add(1)
+	}
+
+	// cache these
+	scl := sc.log
+	scc := sc.count
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		// replace key parts
+		sc.log = scl
+		sc.count = scc
+
+		// Slip it all
+		sc.slip(0)
+	}
 }
