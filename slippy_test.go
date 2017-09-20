@@ -1,10 +1,39 @@
 package slippycounter
 
 import (
+	"fmt"
 	. "github.com/smartystreets/goconvey/convey"
 	"testing"
 	"time"
 )
+
+// Creates a 30 second slippy counter, belches the
+// counter value every 1 second, and does some Add()
+// and Sleep()
+func ExampleSlippyCounter() {
+
+	counter := NewSlippyCounter(30 * time.Second)
+	defer counter.Close()
+
+	// Goro to belch the count every second
+	go func() {
+		for c := 0; c < 60; c++ {
+			fmt.Printf("Count: %d\n", counter.Count())
+			time.Sleep(1 * time.Second)
+		}
+	}()
+
+	counter.Add(1)
+	counter.Add(3)
+	time.Sleep(2 * time.Second)
+	counter.Add(5)
+	counter.Add(7)
+	time.Sleep(10 * time.Second)
+	counter.Add(9)
+
+	time.Sleep(40 * time.Second)
+
+}
 
 func TestCounterZeroSlip(t *testing.T) {
 
