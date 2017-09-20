@@ -42,7 +42,7 @@ func TestCounterZeroSlip(t *testing.T) {
 
 	Convey("Given new Slippy Counter", t, func() {
 
-		Convey("The Value Should be zero", func() {
+		Convey("The Value should be zero", func() {
 			So(sc.Count(), ShouldEqual, 0)
 		})
 	})
@@ -55,7 +55,7 @@ func TestCounterIdle(t *testing.T) {
 
 	Convey("Given new Slippy Counter", t, func() {
 
-		Convey("The Value Should be zero", func() {
+		Convey("The Value should be zero", func() {
 			So(sc.Count(), ShouldEqual, 0)
 		})
 
@@ -65,10 +65,14 @@ func TestCounterIdle(t *testing.T) {
 				sc.Add(c)
 			}
 
+			Convey("The Value should not be zero", func() {
+				So(sc.Count(), ShouldNotEqual, 0)
+			})
+
 			Convey("After Time Passes", func() {
 				time.Sleep(3 * time.Second)
 
-				Convey("The Value Should still be zero", func() {
+				Convey("The Value should again be zero", func() {
 					So(sc.Count(), ShouldEqual, 0)
 				})
 
@@ -85,13 +89,13 @@ func TestCounterAddition(t *testing.T) {
 
 	Convey("Given new Slippy Counter", t, func() {
 
-		Convey("The Value Should be zero", func() {
+		Convey("The Value should be zero", func() {
 			So(sc.Count(), ShouldEqual, 0)
 		})
 
 		Convey("When Add(1)", func() {
 			sc.Add(1)
-			Convey("The Value Should be Greater than it was", func() {
+			Convey("The Value should be one", func() {
 				time.Sleep(sd)
 				So(sc.Count(), ShouldEqual, 1)
 			})
@@ -100,7 +104,7 @@ func TestCounterAddition(t *testing.T) {
 		Convey("When Add(1) Again", func() {
 			sc.Add(1)
 
-			Convey("The Value Should be Greater than it was", func() {
+			Convey("The Value should be two", func() {
 				time.Sleep(sd)
 				So(sc.Count(), ShouldEqual, 2)
 			})
@@ -109,7 +113,7 @@ func TestCounterAddition(t *testing.T) {
 		Convey("After Time Passes", func() {
 			time.Sleep(4 * time.Second)
 
-			Convey("The Value Should be Less than it was", func() {
+			Convey("The Value should be zero", func() {
 				time.Sleep(sd)
 				So(sc.Count(), ShouldEqual, 0)
 			})
@@ -125,7 +129,7 @@ func TestCounterClosingAdd(t *testing.T) {
 
 	Convey("Given new Slippy Counter", t, func() {
 
-		Convey("The Value Should be zero", func() {
+		Convey("The Value should be zero", func() {
 			So(sc.Count(), ShouldEqual, 0)
 		})
 
@@ -134,7 +138,7 @@ func TestCounterClosingAdd(t *testing.T) {
 
 			Convey("When Add(1)", func() {
 				sc.Add(1)
-				Convey("The Value Should be the same", func() {
+				Convey("The Value should still be zero", func() {
 					time.Sleep(sd)
 					So(sc.Count(), ShouldEqual, 0)
 				})
@@ -152,13 +156,13 @@ func TestCounterClosingLatent(t *testing.T) {
 
 	Convey("Given new Slippy Counter", t, func() {
 
-		Convey("The Value Should be zero", func() {
+		Convey("The Value should be zero", func() {
 			So(sc.Count(), ShouldEqual, 0)
 		})
 
 		Convey("When Add(1)", func() {
 			sc.Add(1)
-			Convey("The Value Should be Greater than it was", func() {
+			Convey("The Value should be one", func() {
 				time.Sleep(sd)
 				So(sc.Count(), ShouldEqual, 1)
 			})
@@ -170,7 +174,7 @@ func TestCounterClosingLatent(t *testing.T) {
 			Convey("After Time Passes", func() {
 				time.Sleep(3 * time.Second)
 
-				Convey("The Value Should be the same", func() {
+				Convey("The Value should still be one", func() {
 					time.Sleep(sd)
 					So(sc.Count(), ShouldEqual, 1)
 				})
@@ -189,14 +193,14 @@ func TestCounterSubZero(t *testing.T) {
 
 	Convey("Given new Slippy Counter", t, func() {
 
-		Convey("The Value Should be zero", func() {
+		Convey("The Value should be zero", func() {
 			So(sc.Count(), ShouldEqual, 0)
 		})
 
 		Convey("When Add(-1)", func() {
 			sc.Add(-1)
 
-			Convey("The Value Should be the same", func() {
+			Convey("The Value should still be zero", func() {
 				time.Sleep(sd)
 				So(sc.Count(), ShouldEqual, 0)
 			})
@@ -214,13 +218,13 @@ func TestCounterBurn(t *testing.T) {
 
 	Convey("Given new Slippy Counter", t, func() {
 
-		Convey("The Value Should be zero", func() {
+		Convey("The Value should be zero", func() {
 			So(sc.Count(), ShouldEqual, 0)
 		})
 
 		Convey("When Add(1)", func() {
 			sc.Add(1)
-			Convey("The Value Should be Greater than it was", func() {
+			Convey("The Value should be one", func() {
 				time.Sleep(sd)
 				So(sc.Count(), ShouldEqual, 1)
 			})
@@ -232,7 +236,7 @@ func TestCounterBurn(t *testing.T) {
 
 			Convey("When Add(1)", func() {
 				sc.Add(1)
-				Convey("The Value Should be Greater than it was", func() {
+				Convey("The Value should be two", func() {
 					time.Sleep(sd)
 					So(sc.Count(), ShouldEqual, 2)
 				})
@@ -241,7 +245,7 @@ func TestCounterBurn(t *testing.T) {
 
 			Convey("When Add(1) Again", func() {
 				sc.Add(1)
-				Convey("The Value Should be Greater than it was", func() {
+				Convey("The Value should be three", func() {
 					time.Sleep(sd)
 					So(sc.Count(), ShouldEqual, 3)
 				})
@@ -253,7 +257,7 @@ func TestCounterBurn(t *testing.T) {
 		Convey("After Time Passes", func() {
 			time.Sleep(4 * time.Second)
 
-			Convey("The Value Should be Less than it was", func() {
+			Convey("The Value should be zero", func() {
 				time.Sleep(sd)
 				So(sc.Count(), ShouldEqual, 0)
 			})
