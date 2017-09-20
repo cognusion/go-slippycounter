@@ -74,16 +74,27 @@ func (s *SlippyCounter) Count() int64 {
 // Close closes a SlippyCounter from slipping, or allowing new
 // Add()s. Maybe Freeze() would be more appropriate.
 func (s *SlippyCounter) Close() {
-	s.closed = true
-	close(s.closeChan)
+	if !s.closed {
+		s.closed = true
+		close(s.closeChan)
+	}
 }
 
 // slipper is the internal handler for Add(), Close(),
 // and slip operations
 func (s *SlippyCounter) slipper() {
 	// Ticker is to fire of the slip operation
-	t := time.NewTicker(s.timeSlip)
-	defer t.Stop()
+	var t *time.Ticker
+	if s.timeSlip.Seconds() > 0 {
+		// Valid ticker
+		t = time.NewTicker(s.timeSlip)
+		defer t.Stop()
+	} else {
+		// We don't want a ticker, but we have to create one
+		// or the select{} will die violently
+		t = time.NewTicker(1 * time.Second)
+		t.Stop()
+	}
 
 SLIPLOOP:
 	for {
@@ -102,39 +113,42 @@ SLIPLOOP:
 				// Don't bother
 				continue
 			}
+			s.slip(s.timeSlip) // synchronous, so we don't have to lock
 
-			then := time.Now().Add(s.timeSlip * -1) // add negative time to subtract, because awkward
-			last := 0
-			lastCount := s.count
-
-			for n, tn := range s.log {
-				if tn != nil {
-					if tn.When.Before(then) {
-						// We'll want to cull this one
-						last = n + 1
-						lastCount -= tn.Num
-					}
-				}
-			}
-
-			if last > 0 {
-				// Something to cull
-				newLogSize := len(s.log) - last
-				if newLogSize > 0 {
-					// We still have items in the log
-					newlog := make([]*timeNumber, newLogSize)
-					s.log = append(newlog, s.log[last:]...)
-				} else {
-					// New log is empty
-					s.log = []*timeNumber{}
-				}
-
-				s.count = lastCount
-
-			}
 		case <-s.closeChan:
 			// clean up
 			break SLIPLOOP
 		}
+	}
+}
+
+func (s *SlippyCounter) slip(dur time.Duration) {
+	then := time.Now().Add(dur * -1) // add negative time to subtract, because awkward
+	last := 0
+	lastCount := s.count
+
+	for n, tn := range s.log {
+		if tn != nil {
+			if tn.When.Before(then) {
+				// We'll want to cull this one
+				last = n + 1
+				lastCount -= tn.Num
+			}
+		}
+	}
+
+	if last > 0 {
+		// Something to cull
+		newLogSize := len(s.log) - last
+		if newLogSize > 0 {
+			// We still have items in the log
+			newlog := make([]*timeNumber, newLogSize)
+			s.log = append(newlog, s.log[last:]...)
+		} else {
+			// New log is empty
+			s.log = []*timeNumber{}
+		}
+
+		s.count = lastCount
 	}
 }
