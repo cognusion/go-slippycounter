@@ -87,7 +87,13 @@ func (s *SlippyCounter) slipper() {
 	var t *time.Ticker
 	if s.timeSlip.Seconds() > 0 {
 		// Valid ticker
-		t = time.NewTicker(s.timeSlip)
+		if s.timeSlip < 1*time.Second {
+			// Subsecond slip, tick on the slip
+			t = time.NewTicker(s.timeSlip)
+		} else {
+			// Tick every second
+			t = time.NewTicker(1 * time.Second)
+		}
 		defer t.Stop()
 	} else {
 		// We don't want a ticker, but we have to create one
