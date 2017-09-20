@@ -45,7 +45,7 @@ type SlippyCounter struct {
 func NewSlippyCounter(slip time.Duration) *SlippyCounter {
 	sc := &SlippyCounter{
 		timeSlip:  slip,
-		opChan:    make(chan int64),
+		opChan:    make(chan int64, 10),
 		closeChan: make(chan struct{}),
 	}
 
