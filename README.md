@@ -9,7 +9,7 @@ This is very useful for long-running "how many in the last X" questions.
 This is fully goro-safe, but not particularly recommended for: 
 * Very short slip durations (<1 second)
 * ~~Very high-rate Adds (thousands(?) per second)~~ _(This is actually fine now)_
-* Where having absolute certainty the Count() is precise is at a given time is required
+* Where having absolute certainty the Count() is precise at a given time is required
 
 Count() may be more or less than what you expect.
 
