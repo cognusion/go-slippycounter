@@ -236,7 +236,7 @@ func TestCounterSubZero(t *testing.T) {
 }
 
 func TestCounterBurn(t *testing.T) {
-	defer leaktest.Check(t)
+	defer leaktest.Check(t)()
 
 	sc := NewSlippyCounter(2 * time.Second)
 	defer sc.Close()
