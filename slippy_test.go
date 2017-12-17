@@ -2,6 +2,7 @@ package slippycounter
 
 import (
 	"fmt"
+	"github.com/fortytw2/leaktest"
 	. "github.com/smartystreets/goconvey/convey"
 	"testing"
 	"time"
@@ -235,6 +236,7 @@ func TestCounterSubZero(t *testing.T) {
 }
 
 func TestCounterBurn(t *testing.T) {
+	defer leaktest.Check(t)
 
 	sc := NewSlippyCounter(2 * time.Second)
 	defer sc.Close()
