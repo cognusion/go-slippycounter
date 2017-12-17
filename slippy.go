@@ -102,7 +102,6 @@ func (s *SlippyCounter) slipper() {
 		t.Stop()
 	}
 
-SLIPLOOP:
 	for {
 		select {
 		case num := <-s.opChan:
@@ -123,7 +122,7 @@ SLIPLOOP:
 
 		case <-s.closeChan:
 			// clean up
-			break SLIPLOOP
+			return
 		}
 	}
 }
