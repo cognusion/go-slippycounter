@@ -39,7 +39,7 @@ type SlippyCounter struct {
 	// timeSlip is the amount of time between slips
 	timeSlip time.Duration
 	// closed is a quick state checker
-	closed bool
+	closed atomic.Value
 }
 
 // NewSlippyCounter takes a slip duration and returns an initialized SlippyCounter
@@ -49,6 +49,7 @@ func NewSlippyCounter(slip time.Duration) *SlippyCounter {
 		opChan:    make(chan int64, 10),
 		closeChan: make(chan struct{}),
 	}
+	sc.closed.Store(false)
 
 	go sc.slipper()
 
@@ -57,7 +58,7 @@ func NewSlippyCounter(slip time.Duration) *SlippyCounter {
 
 // Add increments an unclosed SlippyCounter by num
 func (s *SlippyCounter) Add(num int) {
-	if s.closed {
+	if s.closed.Load() == true {
 		// circuit breaker
 		return
 	}
@@ -75,8 +76,8 @@ func (s *SlippyCounter) Count() int64 {
 // Close closes a SlippyCounter from slipping, or allowing new
 // Add()s. Maybe Freeze() would be more appropriate.
 func (s *SlippyCounter) Close() {
-	if !s.closed {
-		s.closed = true
+	if s.closed.Load() == false {
+		s.closed.Store(true)
 		close(s.closeChan)
 	}
 }

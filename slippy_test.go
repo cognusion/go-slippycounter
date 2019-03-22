@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/fortytw2/leaktest"
 	. "github.com/smartystreets/goconvey/convey"
+	"sync/atomic"
 	"testing"
 	"time"
 )
@@ -322,13 +323,13 @@ func BenchmarkSlip1k(b *testing.B) {
 
 	// cache these
 	scl := sc.log
-	scc := sc.count
+	scc := atomic.LoadInt64(&sc.count)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		// replace key parts
 		sc.log = scl
-		sc.count = scc
+		atomic.StoreInt64(&sc.count, scc)
 
 		// Slip it all
 		sc.slip(0)
@@ -345,13 +346,13 @@ func BenchmarkSlip10k(b *testing.B) {
 
 	// cache these
 	scl := sc.log
-	scc := sc.count
+	scc := atomic.LoadInt64(&sc.count)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		// replace key parts
 		sc.log = scl
-		sc.count = scc
+		atomic.StoreInt64(&sc.count, scc)
 
 		// Slip it all
 		sc.slip(0)
