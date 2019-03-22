@@ -1,6 +1,7 @@
 package slippycounter
 
 import (
+	"sync/atomic"
 	"time"
 )
 
@@ -68,7 +69,7 @@ func (s *SlippyCounter) Add(num int) {
 // If the SlippyCounter has been Close()d, it will perpetually
 // return the last value. i.e. it may not be 0
 func (s *SlippyCounter) Count() int64 {
-	return s.count
+	return atomic.LoadInt64(&s.count)
 }
 
 // Close closes a SlippyCounter from slipping, or allowing new
@@ -110,7 +111,7 @@ func (s *SlippyCounter) slipper() {
 				// Don't waste my time
 				continue
 			}
-			s.count += num
+			atomic.AddInt64(&s.count, num)
 			s.log = append(s.log, newTimeNumberNow(num))
 		case <-t.C:
 			// timer tick
@@ -130,7 +131,7 @@ func (s *SlippyCounter) slipper() {
 func (s *SlippyCounter) slip(dur time.Duration) {
 	then := time.Now().Add(dur * -1) // add negative time to subtract, because awkward
 	last := 0
-	lastCount := s.count
+	lastCount := atomic.LoadInt64(&s.count)
 
 	for n, tn := range s.log {
 		if tn != nil {
@@ -154,6 +155,6 @@ func (s *SlippyCounter) slip(dur time.Duration) {
 			s.log = []*timeNumber{}
 		}
 
-		s.count = lastCount
+		atomic.StoreInt64(&s.count, lastCount)
 	}
 }
